@@ -81,7 +81,7 @@ pub async fn update_user_role(
     }
 
     let mut users: Vec<User> = db
-        .query("SELECT * FROM user WHERE id = type::thing('user', $id) OR email = $id")
+        .query("SELECT * FROM user WHERE id = type::record('user', $id) OR email = $id")
         .bind(("id", id.clone()))
         .await?
         .take(0)?;

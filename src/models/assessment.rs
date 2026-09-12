@@ -5,6 +5,7 @@ use surrealdb::sql::Thing;
 pub enum AssessmentStatus {
     Draft,
     Submitted,
+    #[serde(rename = "Under Verification")]
     UnderVerification,
     Verified,
     Rejected,
