@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::sql::Thing;
+use surrealdb::types::{RecordId, SurrealValue, ToSql};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, SurrealValue)]
+#[surreal(untagged)]
 pub enum UserRole {
     Superadmin,
     Admin,
@@ -24,10 +25,10 @@ impl std::fmt::Display for UserRole {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
 pub struct User {
     #[serde(skip_serializing_if = "Option::is_none", serialize_with = "crate::models::serialize_id")]
-    pub id: Option<Thing>,
+    pub id: Option<RecordId>,
     pub first_name: String,
     pub middle_name: Option<String>,
     pub surname: String,
@@ -56,7 +57,7 @@ pub struct UserDto {
 
 impl From<User> for UserDto {
     fn from(u: User) -> Self {
-        let id_str = u.id.as_ref().map(|t| t.id.to_string()).unwrap_or_default();
+        let id_str = u.id.as_ref().map(|t| t.key.to_sql()).unwrap_or_default();
         Self {
             id: id_str,
             first_name: u.first_name,

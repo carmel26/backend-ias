@@ -1,19 +1,67 @@
-use surrealdb::engine::local::{Db, Mem};
+// use surrealdb::engine::local::{Db, Mem};
 use surrealdb::Surreal;
+use surrealdb::engine::remote::ws::{Client, Ws};
 use tracing::info;
 use crate::auth::hash_password;
 use crate::models::*;
 
-pub type AppDb = Surreal<Db>;
+pub type AppDb = Surreal<Client>;
+
+// pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
+//     let db = Surreal::new::<Mem>(()).await?;
+//     db.use_ns("academic").use_db("item_analysis").await?;
+//     info!("Initialized SurrealDB in-memory database");
+
+//     seed_data(&db).await?;
+//     Ok(db)
+// }
 
 pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
-    let db = Surreal::new::<Mem>(()).await?;
-    db.use_ns("academic").use_db("item_analysis").await?;
-    info!("Initialized SurrealDB in-memory database");
+    // Change "127.0.0.1:8003" to "127.0.0.1:8000" below:
+    let mut db_url = std::env::var("SURREALDB_URL").unwrap_or_else(|_| "127.0.0.1:8000".to_string());
+    let db_ns = std::env::var("SURREALDB_NS").unwrap_or_else(|_| "academic".to_string());
+    let db_name = std::env::var("SURREALDB_DB").unwrap_or_else(|_| "item_analysis".to_string());
+
+    // Clean up scheme prefixes if present, as Surreal::new::<Ws> expects "host:port" or "host:port/rpc"
+    db_url = db_url.trim_start_matches("ws://")
+        .trim_start_matches("wss://")
+        .trim_start_matches("http://")
+        .trim_start_matches("https://")
+        .to_string();
+
+    let db = Surreal::new::<Ws>(db_url.as_str()).await?;
+
+    if let (Ok(username), Ok(password)) = (std::env::var("SURREALDB_USER"), std::env::var("SURREALDB_PASS")) {
+        if !username.trim().is_empty() && !password.trim().is_empty() {
+            db.signin(surrealdb::opt::auth::Root {
+                username,
+                password,
+            })
+            .await?;
+        }
+    }
+
+    db.use_ns(db_ns.as_str())
+        .use_db(db_name.as_str())
+        .await?;
+
+    // SurrealDB 3 databases may be strict, so create the application's
+    // schemaless tables before the initial seed queries run.
+    db.query(
+        "DEFINE TABLE IF NOT EXISTS settings SCHEMALESS; \
+         DEFINE TABLE IF NOT EXISTS user SCHEMALESS; \
+         DEFINE TABLE IF NOT EXISTS assessment SCHEMALESS; \
+         DEFINE TABLE IF NOT EXISTS question SCHEMALESS;",
+    )
+    .await?;
+
+    info!("Connected to SurrealDB at {} (ns: {}, db: {})", db_url, db_ns, db_name);
 
     seed_data(&db).await?;
+
     Ok(db)
 }
+
 
 async fn seed_data(db: &AppDb) -> Result<(), Box<dyn std::error::Error>> {
     // Check if settings exist, if not seed settings

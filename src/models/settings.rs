@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::sql::Thing;
+use surrealdb::types::{RecordId, SurrealValue};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
 pub struct DiscriminationThresholds {
     pub excellent: f64, // >= 0.40
     pub good: f64,      // >= 0.30
@@ -20,10 +20,10 @@ impl Default for DiscriminationThresholds {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
 pub struct SystemSettings {
     #[serde(skip_serializing_if = "Option::is_none", serialize_with = "crate::models::serialize_id")]
-    pub id: Option<Thing>,
+    pub id: Option<RecordId>,
     pub upper_lower_percentage: f64, // default 27.0
     pub thresholds: DiscriminationThresholds,
     pub schools: Vec<String>,
