@@ -15,10 +15,17 @@ pub struct Claims {
     pub sub: String,
     pub email: String,
     pub role: UserRole,
+    #[serde(default)]
+    pub school: String,
     pub exp: usize,
 }
 
-pub fn create_jwt(user_id: &str, email: &str, role: UserRole) -> Result<String, AppError> {
+pub fn create_jwt(
+    user_id: &str,
+    email: &str,
+    role: UserRole,
+    school: &str,
+) -> Result<String, AppError> {
     let expiration = chrono::Utc::now()
         .checked_add_signed(chrono::Duration::days(7))
         .expect("valid timestamp")
@@ -28,6 +35,7 @@ pub fn create_jwt(user_id: &str, email: &str, role: UserRole) -> Result<String, 
         sub: user_id.to_string(),
         email: email.to_string(),
         role,
+        school: school.to_string(),
         exp: expiration,
     };
 

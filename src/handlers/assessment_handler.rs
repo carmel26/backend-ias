@@ -77,8 +77,13 @@ pub async fn list_assessments(
     State(db): State<AppDb>,
     claims: Claims,
 ) -> Result<Json<Vec<Assessment>>, AppError> {
-    let assessments: Vec<Assessment> = if claims.role == UserRole::Superadmin || claims.role == UserRole::Admin {
+    let assessments: Vec<Assessment> = if claims.role == UserRole::Superadmin {
         db.query("SELECT * FROM assessment").await?.take(0)?
+    } else if claims.role == UserRole::Admin {
+        db.query("SELECT * FROM assessment WHERE school = $school")
+            .bind(("school", claims.school))
+            .await?
+            .take(0)?
     } else {
         db.query("SELECT * FROM assessment WHERE user_id = $uid")
             .bind(("uid", claims.sub))
@@ -241,6 +246,10 @@ pub async fn verify_assessment(
     let mut asm = assessments
         .pop()
         .ok_or_else(|| AppError::NotFound("Assessment not found".to_string()))?;
+
+    if claims.role == UserRole::Admin && asm.school != claims.school {
+        return Err(AppError::Forbidden("You can only verify assessments from your school".to_string()));
+    }
 
     asm.status = req.status;
     asm.admin_feedback = req.feedback;

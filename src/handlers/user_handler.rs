@@ -15,7 +15,14 @@ pub async fn list_users(
         return Err(AppError::Forbidden("Only Admins and Superadmins can list users".to_string()));
     }
 
-    let users: Vec<User> = db.query("SELECT * FROM user").await?.take(0)?;
+    let users: Vec<User> = if claims.role == UserRole::Superadmin {
+        db.query("SELECT * FROM user").await?.take(0)?
+    } else {
+        db.query("SELECT * FROM user WHERE school = $school AND role = 'Lecturer'")
+            .bind(("school", claims.school))
+            .await?
+            .take(0)?
+    };
     let user_dtos: Vec<UserDto> = users.into_iter().map(UserDto::from).collect();
 
     Ok(Json(user_dtos))
@@ -24,7 +31,7 @@ pub async fn list_users(
 pub async fn create_admin_user(
     State(db): State<AppDb>,
     claims: Claims,
-    Json(req): Json<CreateAdminReq>,
+    Json(mut req): Json<CreateAdminReq>,
 ) -> Result<Json<UserDto>, AppError> {
     if claims.role != UserRole::Superadmin && claims.role != UserRole::Admin {
         return Err(AppError::Forbidden("Permission denied".to_string()));
@@ -32,6 +39,17 @@ pub async fn create_admin_user(
 
     if req.role == UserRole::Superadmin && claims.role != UserRole::Superadmin {
         return Err(AppError::Forbidden("Only Superadmins can create Superadmin accounts".to_string()));
+    }
+
+    if claims.role == UserRole::Admin {
+        if req.role != UserRole::Lecturer {
+            return Err(AppError::Forbidden("Admins can only create Lecturer accounts".to_string()));
+        }
+        req.school = claims.school;
+    }
+
+    if req.password.chars().count() < 6 {
+        return Err(AppError::BadRequest("Password must be at least 6 characters long".to_string()));
     }
 
     let existing: Vec<User> = db

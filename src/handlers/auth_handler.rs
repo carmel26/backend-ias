@@ -12,6 +12,10 @@ pub async fn register(
         return Err(AppError::BadRequest("Email and password are required".to_string()));
     }
 
+    if req.password.chars().count() < 6 {
+        return Err(AppError::BadRequest("Password must be at least 6 characters long".to_string()));
+    }
+
     // Check if user email already exists
     let existing: Vec<User> = db
         .query("SELECT * FROM user WHERE email = $email")
@@ -47,7 +51,12 @@ pub async fn register(
 
     let user_obj = created.unwrap_or(user);
     let user_dto: UserDto = user_obj.into();
-    let token = create_jwt(&user_dto.id, &user_dto.email, user_dto.role.clone())?;
+    let token = create_jwt(
+        &user_dto.id,
+        &user_dto.email,
+        user_dto.role.clone(),
+        &user_dto.school,
+    )?;
 
     Ok(Json(AuthResponse {
         token,
@@ -75,7 +84,12 @@ pub async fn login(
     }
 
     let user_dto: UserDto = user.into();
-    let token = create_jwt(&user_dto.id, &user_dto.email, user_dto.role.clone())?;
+    let token = create_jwt(
+        &user_dto.id,
+        &user_dto.email,
+        user_dto.role.clone(),
+        &user_dto.school,
+    )?;
 
     Ok(Json(AuthResponse {
         token,

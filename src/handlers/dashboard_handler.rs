@@ -8,8 +8,13 @@ pub async fn get_dashboard_stats(
     State(db): State<AppDb>,
     claims: Claims,
 ) -> Result<Json<DashboardStats>, AppError> {
-    let assessments: Vec<Assessment> = if claims.role == UserRole::Superadmin || claims.role == UserRole::Admin {
+    let assessments: Vec<Assessment> = if claims.role == UserRole::Superadmin {
         db.select("assessment").await?
+    } else if claims.role == UserRole::Admin {
+        db.query("SELECT * FROM assessment WHERE school = $school")
+            .bind(("school", claims.school))
+            .await?
+            .take(0)?
     } else {
         db.query("SELECT * FROM assessment WHERE user_id = $uid")
             .bind(("uid", claims.sub))
