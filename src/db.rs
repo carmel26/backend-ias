@@ -1,4 +1,4 @@
-use surrealdb::engine::local::{Db, Mem};
+use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
 use tracing::info;
 use crate::auth::hash_password;
@@ -7,9 +7,11 @@ use crate::models::*;
 pub type AppDb = Surreal<Db>;
 
 pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
-    let db = Surreal::new::<Mem>(()).await?;
+    // SurrealKV stores the database on disk, so data survives `cargo run`
+    // restarts. The directory is created automatically on first use.
+    let db = Surreal::new::<SurrealKv>("data/surrealdb").await?;
     db.use_ns("academic").use_db("item_analysis").await?;
-    info!("Initialized SurrealDB in-memory database");
+    info!("Opened persistent SurrealDB database at data/surrealdb");
 
     seed_data(&db).await?;
     Ok(db)

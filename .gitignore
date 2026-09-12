@@ -1,1 +1,8 @@
 /target
+backup.surql
+*backup.surql
+./backup.surql
+.env
+*.env
+history.txt
+data/
