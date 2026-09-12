@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::types::{RecordId, SurrealValue};
+use surrealdb::sql::Thing;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, SurrealValue)]
-#[surreal(untagged)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum AssessmentStatus {
     Draft,
     Submitted,
@@ -23,10 +22,10 @@ impl std::fmt::Display for AssessmentStatus {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Assessment {
     #[serde(skip_serializing_if = "Option::is_none", serialize_with = "crate::models::serialize_id")]
-    pub id: Option<RecordId>,
+    pub id: Option<Thing>,
     pub user_id: String,
     pub lecturer_name: String,
     pub school: String,

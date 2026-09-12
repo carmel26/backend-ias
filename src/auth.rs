@@ -5,17 +5,12 @@ use axum::{
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use surrealdb::types::SurrealValue;
 use crate::error::AppError;
 use crate::models::UserRole;
 
-pub fn get_jwt_secret() -> Vec<u8> {
-    std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "super_secret_academic_item_analysis_jwt_key_2026".to_string())
-        .into_bytes()
-}
+const JWT_SECRET: &[u8] = b"super_secret_academic_item_analysis_jwt_key_2026";
 
-#[derive(Debug, Serialize, Deserialize, Clone, SurrealValue)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: String,
     pub email: String,
@@ -36,21 +31,19 @@ pub fn create_jwt(user_id: &str, email: &str, role: UserRole) -> Result<String, 
         exp: expiration,
     };
 
-    let secret = get_jwt_secret();
     let token = encode(
         &Header::default(),
         &claims,
-        &EncodingKey::from_secret(&secret),
+        &EncodingKey::from_secret(JWT_SECRET),
     )?;
 
     Ok(token)
 }
 
 pub fn verify_jwt(token: &str) -> Result<Claims, AppError> {
-    let secret = get_jwt_secret();
     let token_data = decode::<Claims>(
         token,
-        &DecodingKey::from_secret(&secret),
+        &DecodingKey::from_secret(JWT_SECRET),
         &Validation::default(),
     )?;
 

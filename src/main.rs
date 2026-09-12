@@ -20,9 +20,6 @@ use handlers::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load environment variables from .env file
-    dotenvy::dotenv().ok();
-
     // Initialize tracing logger
     tracing_subscriber::registry()
         .with(
@@ -78,13 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(cors)
         .with_state(db);
 
-    let host = std::env::var("SERVER_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
-    let port: u16 = std::env::var("SERVER_PORT")
-        .unwrap_or_else(|_| "3000".to_string())
-        .parse()
-        .unwrap_or(3000);
-
-    let addr: SocketAddr = format!("{}:{}", host, port).parse()?;
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     info!("Server listening on http://{}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
