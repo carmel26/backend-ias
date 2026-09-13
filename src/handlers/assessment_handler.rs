@@ -29,7 +29,7 @@ pub async fn create_assessment(
 
     // Fetch user details for lecturer name and school
     let users: Vec<User> = db
-        .query("SELECT * FROM user WHERE id = type::thing('user', $id) OR email = $email")
+        .query("SELECT * FROM user WHERE id = type::record('user', $id) OR email = $email")
         .bind(("id", claims.sub.clone()))
         .bind(("email", claims.email.clone()))
         .await?
@@ -99,7 +99,7 @@ pub async fn get_assessment(
     Path(id): Path<String>,
 ) -> Result<Json<Assessment>, AppError> {
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", id.clone()))
         .await?
         .take(0)?;
@@ -118,7 +118,7 @@ pub async fn update_assessment(
     Json(req): Json<UpdateAssessmentReq>,
 ) -> Result<Json<Assessment>, AppError> {
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", id.clone()))
         .await?
         .take(0)?;
@@ -171,7 +171,7 @@ pub async fn delete_assessment(
     Path(id): Path<String>,
 ) -> Result<Json<serde_json::Value>, AppError> {
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", id.clone()))
         .await?
         .take(0)?;
@@ -202,7 +202,7 @@ pub async fn submit_assessment(
     Path(id): Path<String>,
 ) -> Result<Json<Assessment>, AppError> {
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", id.clone()))
         .await?
         .take(0)?;
@@ -238,7 +238,7 @@ pub async fn verify_assessment(
     }
 
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", id.clone()))
         .await?
         .take(0)?;
