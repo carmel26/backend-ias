@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
-use surrealdb::sql::Thing;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+use surrealdb::types::{RecordId, SurrealValue};
+
+#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue, PartialEq, Eq)]
 pub enum AssessmentStatus {
     Draft,
     Submitted,
-    #[serde(rename = "Under Verification")]
+    #[surreal(rename = "Under Verification")]
     UnderVerification,
     Verified,
     Rejected,
@@ -23,10 +24,12 @@ impl std::fmt::Display for AssessmentStatus {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
 pub struct Assessment {
-    #[serde(skip_serializing_if = "Option::is_none", serialize_with = "crate::models::serialize_id")]
-    pub id: Option<Thing>,
+    #[surreal(skip)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<RecordId>,
+
     pub user_id: String,
     pub lecturer_name: String,
     pub school: String,
