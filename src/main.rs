@@ -75,11 +75,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(cors)
         .with_state(db);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    // Replace hardcoded listener address with this:
+    let port: u16 = env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(3000);
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     info!("Server listening on http://{}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;
+    info!("Server listening on http://{}", addr);
 
     Ok(())
 }
