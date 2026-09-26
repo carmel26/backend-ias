@@ -8,10 +8,15 @@ use crate::models::*;
 pub type AppDb = Surreal<surrealdb::engine::local::Db>;
 
 pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
-    // 1. Read path from environment variable, or fall back to local disk folder
-    let db_path = env::var("DATABASE_PATH").unwrap_or_else(|_| "data/surrealdb".to_string());
+    // 1. Read path from environment variable.
+    //    On Render, set DATABASE_PATH=/var/data/surrealdb (requires a Disk to be attached).
+    //    Falls back to /tmp/surrealdb for ephemeral/local use.
+    let db_path = env::var("DATABASE_PATH").unwrap_or_else(|_| "/tmp/surrealdb".to_string());
 
-    // 2. Initialize SurrealKV with the configured path
+    // 2. Ensure the directory exists before SurrealKV tries to open it
+    std::fs::create_dir_all(&db_path)?;
+
+    // 3. Initialize SurrealKV with the configured path
     let db = Surreal::new::<SurrealKv>(&db_path).await?;
     db.use_ns("academic").use_db("item_analysis").await?;
     info!("Opened persistent SurrealDB database at {}", db_path);
