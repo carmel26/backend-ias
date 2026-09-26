@@ -1,11 +1,11 @@
-use surrealdb::engine::local::{Db, SurrealKv};
+use surrealdb::engine::any::connect;
 use surrealdb::Surreal;
 use tracing::info;
 use std::env;
 use crate::auth::hash_password;
 use crate::models::*;
 
-pub type AppDb = Surreal<Db>;
+pub type AppDb = Surreal<surrealdb::engine::any::Any>;
 
 pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
     // 1. Read path from environment variable, or fall back to local disk folder
@@ -18,12 +18,39 @@ pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
 
     // 3. Run seeding logic (which is already designed to skip if data exists)
     seed_data(&db).await?;
+
     Ok(db)
 }
 
+// pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
+//     // SurrealKV stores the database on disk, so data survives `cargo run`
+//     // restarts. The directory is created automatically on first use.
+//     let db = Surreal::new::<SurrealKv>("data/surrealdb").await?;
+//     db.use_ns("academic").use_db("item_analysis").await?;
+//     info!("Opened persistent SurrealDB database at data/surrealdb");
+
+//     seed_data(&db).await?;
+//     Ok(db)
+// }
+
 async fn seed_data(db: &AppDb) -> Result<(), Box<dyn std::error::Error>> {
     // Check if settings exist, if not seed settings
-    let settings: Vec<SystemSettings> = db.query("SELECT * FROM settings").await?.take(0)?;
+    db.query(
+        r#"
+        DEFINE TABLE IF NOT EXISTS settings SCHEMALESS;
+        DEFINE TABLE IF NOT EXISTS user SCHEMALESS;
+        DEFINE TABLE IF NOT EXISTS assessment SCHEMALESS;
+        DEFINE TABLE IF NOT EXISTS question SCHEMALESS;
+        "#
+    )
+    .await?;
+
+    info!("Ensured database tables exist");
+
+    // Check if settings exist
+    let settings: Vec<SystemSettings> =
+        db.query("SELECT * FROM settings").await?.take(0)?; 
+        
     if settings.is_empty() {
         let default_settings = SystemSettings {
             id: None,

@@ -2,7 +2,6 @@ use axum::{
     routing::{delete, get, post, put},
     Router,
 };
-use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -46,33 +45,63 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/auth/register", post(register))
         .route("/api/auth/login", post(login))
         .route("/api/auth/me", get(get_me))
+
         // User & Admin management routes
         .route("/api/admin/users", get(list_users).post(create_admin_user))
         .route("/api/admin/users/:id/role", put(update_user_role))
         .route("/api/admin/users/:id", delete(delete_user))
+
         // System Settings routes
         .route("/api/admin/settings", get(get_settings).put(update_settings))
+
         // Dashboard stats
         .route("/api/dashboard/stats", get(get_dashboard_stats))
+
         // Assessment routes
-        .route("/api/assessments", get(list_assessments).post(create_assessment))
+        .route(
+            "/api/assessments",
+            get(list_assessments).post(create_assessment),
+        )
         .route(
             "/api/assessments/:id",
-            get(get_assessment).put(update_assessment).delete(delete_assessment),
+            get(get_assessment)
+                .put(update_assessment)
+                .delete(delete_assessment),
         )
-        .route("/api/assessments/:id/submit", post(submit_assessment))
-        .route("/api/assessments/:id/verify", post(verify_assessment))
+        .route(
+            "/api/assessments/:id/submit",
+            post(submit_assessment),
+        )
+        .route(
+            "/api/assessments/:id/verify",
+            post(verify_assessment),
+        )
+
         // Questions / Item Entry routes
         .route(
             "/api/assessments/:id/questions",
             get(list_questions).post(add_question),
         )
-        .route("/api/assessments/:id/questions/batch", put(batch_save_questions))
+        .route(
+            "/api/assessments/:id/questions/batch",
+            put(batch_save_questions),
+        )
         .route("/api/questions/:id", delete(delete_question))
+
         // Analysis & Report routes
-        .route("/api/assessments/:id/analyze", get(analyze_assessment).post(analyze_assessment))
-        .route("/api/assessments/:id/report", get(get_assessment_report))
+        .route(
+            "/api/assessments/:id/analyze",
+            get(analyze_assessment).post(analyze_assessment),
+        )
+        .route(
+            "/api/assessments/:id/report",
+            get(get_assessment_report),
+        )
+
+        // Apply CORS
         .layer(cors)
+
+        // Attach database state
         .with_state(db);
 
     // Replace hardcoded listener address with this:
@@ -84,7 +113,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     info!("Server listening on http://{}", addr);
 
-    let listener = tokio::net::TcpListener::bind(addr).await?;
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+
     axum::serve(listener, app).await?;
     info!("Server listening on http://{}", addr);
 

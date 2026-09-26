@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
+
+use surrealdb::types::{SurrealValue};
 use super::assessment::Assessment;
 use super::question::QuestionItem;
 use super::analysis::ItemAnalysisSummary;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
 pub struct AssessmentReport {
     pub assessment: Assessment,
     pub summary: ItemAnalysisSummary,
@@ -11,7 +13,7 @@ pub struct AssessmentReport {
     pub generated_at: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
 pub struct DashboardStats {
     pub total_assessments: usize,
     pub submitted: usize,

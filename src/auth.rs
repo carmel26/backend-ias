@@ -6,11 +6,13 @@ use axum::{
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use crate::error::AppError;
-use crate::models::UserRole;
+use crate::models::UserRole; 
 
-const JWT_SECRET: &[u8] = b"super_secret_academic_item_analysis_jwt_key_2026";
+use surrealdb::types::{SurrealValue};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+const JWT_SECRET: &[u8] = b"CN@super_secret_academic_item_analysis_jwt_key_2026";
+
+#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
 pub struct Claims {
     pub sub: String,
     pub email: String,

@@ -12,15 +12,24 @@ pub use question::*;
 pub use analysis::*;
 pub use report::*;
 
-use serde::Serializer;
-use surrealdb::sql::Thing;
+use serde::Serializer; 
 
-pub fn serialize_id<S>(id: &Option<Thing>, serializer: S) -> Result<S::Ok, S::Error>
+use surrealdb::types::{RecordId};
+
+pub fn serialize_id<S>(
+    id: &Option<RecordId>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     match id {
-        Some(t) => serializer.serialize_str(&t.id.to_string()),
+        Some(t) => match &t.key {
+            surrealdb::types::RecordIdKey::String(key) => {
+                serializer.serialize_str(key)
+            }
+            key => serializer.serialize_str(&format!("{:?}", key)),
+        },
         None => serializer.serialize_none(),
     }
 }

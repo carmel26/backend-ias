@@ -12,7 +12,7 @@ pub async fn get_assessment_report(
     Path(assessment_id): Path<String>,
 ) -> Result<Json<AssessmentReport>, AppError> {
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", assessment_id.clone()))
         .await?
         .take(0)?;
