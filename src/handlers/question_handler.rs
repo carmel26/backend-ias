@@ -121,7 +121,7 @@ pub async fn add_question(
     Json(req): Json<CreateQuestionReq>,
 ) -> Result<Json<QuestionItem>, AppError> {
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", assessment_id.clone()))
         .await?
         .take(0)?;
@@ -166,7 +166,7 @@ pub async fn batch_save_questions(
     Json(req): Json<BatchQuestionsReq>,
 ) -> Result<Json<Vec<QuestionItem>>, AppError> {
     let mut assessments: Vec<Assessment> = db
-        .query("SELECT * FROM assessment WHERE id = type::thing('assessment', $id) OR id = $id")
+        .query("SELECT * FROM assessment WHERE id = type::record('assessment', $id) OR id = $id")
         .bind(("id", assessment_id.clone()))
         .await?
         .take(0)?;
