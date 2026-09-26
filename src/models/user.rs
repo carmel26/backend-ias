@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use surrealdb::types::{RecordId, SurrealValue};
+use surrealdb::RecordId;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum UserRole {
     Superadmin,
     Admin,
@@ -25,7 +25,7 @@ impl std::fmt::Display for UserRole {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     #[serde(skip_serializing_if = "Option::is_none", serialize_with = "crate::models::serialize_id")]
     pub id: Option<RecordId>,
@@ -41,7 +41,7 @@ pub struct User {
     pub created_at: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct UserDto {
     pub id: String,
     pub first_name: String,
@@ -60,9 +60,8 @@ impl From<User> for UserDto {
         let id_str = u
             .id
             .as_ref()
-            .map(|record_id| match &record_id.key {
-                surrealdb::types::RecordIdKey::String(key) => key.clone(),
-                key => format!("{:?}", key),
+            .map(|record_id| {
+                String::try_from(record_id.key().clone()).unwrap_or_else(|_| format!("{:?}", record_id.key()))
             })
             .unwrap_or_default();
 
@@ -81,7 +80,7 @@ impl From<User> for UserDto {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RegisterReq {
     pub first_name: String,
     pub middle_name: Option<String>,
@@ -93,19 +92,19 @@ pub struct RegisterReq {
     pub password: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct LoginReq {
     pub email: String,
     pub password: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct AuthResponse {
     pub token: String,
     pub user: UserDto,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct CreateAdminReq {
     pub first_name: String,
     pub middle_name: Option<String>,
@@ -118,7 +117,7 @@ pub struct CreateAdminReq {
     pub role: UserRole,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct UpdateUserRoleReq {
     pub role: UserRole,
 }

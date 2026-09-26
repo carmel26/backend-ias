@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use surrealdb::types::{SurrealValue};
 use super::question::QuestionItem;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ClassificationCount {
     pub excellent: usize,
     pub good: usize,
@@ -12,7 +11,7 @@ pub struct ClassificationCount {
     pub negative: usize,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ItemAnalysisSummary {
     pub total_questions: usize,
     pub mean_difficulty: f64,
@@ -21,7 +20,7 @@ pub struct ItemAnalysisSummary {
     pub overall_recommendation: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FullAnalysisResult {
     pub summary: ItemAnalysisSummary,
     pub questions: Vec<QuestionItem>,

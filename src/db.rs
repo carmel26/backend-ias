@@ -1,11 +1,11 @@
-use surrealdb::engine::any::connect;
+use surrealdb::engine::local::SurrealKv;
 use surrealdb::Surreal;
 use tracing::info;
 use std::env;
 use crate::auth::hash_password;
 use crate::models::*;
 
-pub type AppDb = Surreal<surrealdb::engine::any::Any>;
+pub type AppDb = Surreal<surrealdb::engine::local::Db>;
 
 pub async fn init_db() -> Result<AppDb, Box<dyn std::error::Error>> {
     // 1. Read path from environment variable, or fall back to local disk folder

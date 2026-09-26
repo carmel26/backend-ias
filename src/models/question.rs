@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use surrealdb::types::{RecordId, SurrealValue};
+use surrealdb::RecordId;
 
-
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct QuestionItem {
     #[serde(skip_serializing_if = "Option::is_none", serialize_with = "crate::models::serialize_id")]
     pub id: Option<RecordId>,
@@ -23,7 +22,7 @@ pub struct QuestionItem {
     pub recommendation: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct CreateQuestionReq {
     pub question_number: usize,
     pub prompt: Option<String>,
@@ -31,7 +30,7 @@ pub struct CreateQuestionReq {
     pub lower_correct: usize,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct QuestionInput {
     pub question_number: usize,
     pub prompt: Option<String>,
@@ -39,7 +38,7 @@ pub struct QuestionInput {
     pub lower_correct: usize,
 }
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct BatchQuestionsReq {
     pub questions: Vec<QuestionInput>,
 }

@@ -8,11 +8,9 @@ use serde::{Deserialize, Serialize};
 use crate::error::AppError;
 use crate::models::UserRole; 
 
-use surrealdb::types::{SurrealValue};
-
 const JWT_SECRET: &[u8] = b"CN@super_secret_academic_item_analysis_jwt_key_2026";
 
-#[derive(Debug, Deserialize, Clone, Serialize, SurrealValue)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Claims {
     pub sub: String,
     pub email: String,

@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use surrealdb::types::{RecordId, SurrealValue};
+use surrealdb::RecordId;
 
-#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum AssessmentStatus {
     Draft,
     Submitted,
-    #[surreal(rename = "Under Verification")]
     UnderVerification,
     Verified,
     Rejected,
@@ -24,9 +23,8 @@ impl std::fmt::Display for AssessmentStatus {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, SurrealValue)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Assessment {
-    #[surreal(skip)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<RecordId>,
 

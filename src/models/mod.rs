@@ -14,7 +14,7 @@ pub use report::*;
 
 use serde::Serializer; 
 
-use surrealdb::types::{RecordId};
+use surrealdb::RecordId;
 
 pub fn serialize_id<S>(
     id: &Option<RecordId>,
@@ -24,12 +24,11 @@ where
     S: Serializer,
 {
     match id {
-        Some(t) => match &t.key {
-            surrealdb::types::RecordIdKey::String(key) => {
-                serializer.serialize_str(key)
-            }
-            key => serializer.serialize_str(&format!("{:?}", key)),
-        },
+        Some(t) => {
+            let s = String::try_from(t.key().clone())
+                .unwrap_or_else(|_| format!("{:?}", t.key()));
+            serializer.serialize_str(&s)
+        }
         None => serializer.serialize_none(),
     }
 }
